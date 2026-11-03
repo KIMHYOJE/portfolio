@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase-server'
 import HeroSection from '@/components/HeroSection'
-import FeaturedGrid from '@/components/FeaturedGrid'
-import ActivityTimeline from '@/components/ActivityTimeline'
+import PortfolioView from '@/components/PortfolioView'
 import SkillsSection from '@/components/SkillsSection'
 import FooterSection from '@/components/FooterSection'
 import { PortfolioItem } from '@/types/portfolio'
@@ -13,7 +12,7 @@ async function getItems(): Promise<PortfolioItem[]> {
     const supabase = await createClient()
     const { data, error } = await supabase
       .from('portfolio_items')
-      .select('*')
+      .select('*, item_attachments(*)')
       .eq('is_published', true)
       .order('start_date', { ascending: false })
     if (error) throw error
@@ -25,14 +24,17 @@ async function getItems(): Promise<PortfolioItem[]> {
 
 export default async function Home() {
   const items = await getItems()
-  const featured = items.filter(i => i.is_featured)
-  const awarded = items.filter(i => i.is_awarded)
+  const metrics = {
+    total: items.length,
+    awards: items.filter(i => i.is_awarded).length,
+    live: items.filter(i => i.status === 'IN_PROGRESS').length,
+    domains: new Set(items.map(i => i.domain_tag)).size,
+  }
 
   return (
     <main className="min-h-screen">
-      <HeroSection awardCount={awarded.length} totalCount={items.length} />
-      <FeaturedGrid items={featured} />
-      <ActivityTimeline items={items} />
+      <HeroSection metrics={metrics} />
+      <PortfolioView items={items} />
       <SkillsSection />
       <FooterSection />
     </main>

@@ -1,38 +1,41 @@
 'use client'
 import { useState } from 'react'
-import { PortfolioItem, STATUS_LABELS, Status } from '@/types/portfolio'
-import { createClient } from '@/lib/supabase-browser'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-
-const STATUS_OPTIONS: Status[] = ['IN_PROGRESS', 'COMPLETED', 'ANNOUNCED']
+import { toast } from 'sonner'
+import { ArrowLeft, ChevronRight, Eye, EyeOff, Loader2, LogOut, Plus, Star, Trophy } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { createClient } from '@/lib/supabase-browser'
+import { revalidateHome } from './actions'
+import { formatDate, PortfolioItem, Status, STATUS_LABELS, STATUS_OPTIONS } from '@/types/portfolio'
 
 export default function AdminDashboard({ initialItems }: { initialItems: PortfolioItem[] }) {
   const [items, setItems] = useState(initialItems)
   const [saving, setSaving] = useState<string | null>(null)
+  const [creating, setCreating] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
-  async function updateStatus(id: string, status: Status) {
+  async function patch(id: string, values: Partial<PortfolioItem>, msg: string) {
     setSaving(id)
-    const { error } = await supabase
-      .from('portfolio_items')
-      .update({ status })
-      .eq('id', id)
-    if (!error) {
-      setItems(prev => prev.map(i => i.id === id ? { ...i, status } : i))
-      router.refresh()
-    }
+    const { error } = await supabase.from('portfolio_items').update(values).eq('id', id)
     setSaving(null)
+    if (error) return toast.error(`저장 실패: ${error.message}`)
+    setItems(prev => prev.map(i => (i.id === id ? { ...i, ...values } : i)))
+    toast.success(msg)
+    revalidateHome()
   }
 
-  async function toggleFeatured(id: string, current: boolean) {
-    setSaving(id)
-    const { error } = await supabase
+  async function createItem() {
+    setCreating(true)
+    const { data, error } = await supabase
       .from('portfolio_items')
-      .update({ is_featured: !current })
-      .eq('id', id)
-    if (!error) setItems(prev => prev.map(i => i.id === id ? { ...i, is_featured: !current } : i))
-    setSaving(null)
+      .insert({ title: '새 활동', organizer: '주최 기관', start_date: new Date().toISOString().slice(0, 10), status: 'IN_PROGRESS', is_published: false })
+      .select('id')
+      .single()
+    setCreating(false)
+    if (error) return toast.error(`생성 실패: ${error.message}`)
+    router.push(`/admin/items/${data.id}`)
   }
 
   async function logout() {
@@ -41,70 +44,80 @@ export default function AdminDashboard({ initialItems }: { initialItems: Portfol
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      <header className="bg-gray-900 border-b border-gray-800 px-4 py-4 flex items-center justify-between">
-        <div>
-          <h1 className="font-bold text-lg">관리자 대시보드</h1>
-          <p className="text-xs text-gray-500 mt-0.5">포트폴리오 이력 관리</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <a href="/" className="text-sm text-gray-500 hover:text-white transition-colors">← 사이트 보기</a>
-          <button onClick={logout} className="text-sm text-red-400 hover:text-red-300 transition-colors">로그아웃</button>
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-10 border-b border-zinc-900 bg-zinc-950/90 backdrop-blur">
+        <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-3">
+          <Link href="/" className="inline-flex min-h-[44px] items-center gap-1.5 text-sm text-zinc-400 hover:text-white">
+            <ArrowLeft className="h-4 w-4" /> 사이트
+          </Link>
+          <p className="font-mono text-xs tracking-[0.16em] text-zinc-500">ADMIN · {items.length} ITEMS</p>
+          <button onClick={logout} className="inline-flex min-h-[44px] items-center gap-1.5 text-sm text-zinc-500 hover:text-red-300">
+            <LogOut className="h-4 w-4" /> 로그아웃
+          </button>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="font-semibold text-gray-300">전체 이력 ({items.length}건)</h2>
+      <main className="mx-auto max-w-4xl px-4 py-8">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-extrabold text-white">이력 관리</h1>
+            <p className="mt-1 text-sm text-zinc-500">상태는 선택 즉시 저장됩니다. 사진·STAR 내용은 항목을 눌러 편집하세요.</p>
+          </div>
+          <button onClick={createItem} disabled={creating} className="inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-xl bg-white px-4 text-sm font-semibold text-zinc-950 hover:bg-zinc-200 disabled:opacity-50">
+            {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} 추가
+          </button>
         </div>
 
-        <div className="flex flex-col gap-3">
+        <ul className="mt-6 flex flex-col gap-3">
           {items.map(item => (
-            <div key={item.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap gap-2 mb-1">
-                  {item.is_featured && (
-                    <span className="text-xs bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 px-2 py-0.5 rounded">⭐ 대표</span>
-                  )}
-                  {item.is_awarded && (
-                    <span className="text-xs bg-yellow-500/10 text-yellow-400 border border-yellow-400/20 px-2 py-0.5 rounded">🏆 {item.award_rank}</span>
-                  )}
+            <li key={item.id} className={cn('rounded-2xl border border-zinc-800/80 bg-zinc-900/70 p-4', !item.is_published && 'opacity-60')}>
+              <Link href={`/admin/items/${item.id}`} className="group flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] text-zinc-500">
+                    <span>{formatDate(item.start_date)}</span>
+                    {item.is_featured && <span className="text-amber-300">★ FEATURED{item.featured_rank ? ` #${item.featured_rank}` : ''}</span>}
+                    {item.is_awarded && <span className="inline-flex items-center gap-1 text-amber-200"><Trophy className="h-3 w-3" />{item.award_rank}</span>}
+                    {!item.is_published && <span className="text-zinc-400">HIDDEN</span>}
+                  </div>
+                  <p className="mt-1 font-semibold leading-snug text-white group-hover:underline">{item.title}</p>
+                  <p className="mt-0.5 truncate text-sm text-zinc-500">{item.organizer}</p>
                 </div>
-                <h3 className="font-semibold text-sm text-white leading-snug">{item.title}</h3>
-                <p className="text-xs text-gray-600 mt-0.5">{item.organizer} · {item.start_date}</p>
-              </div>
+                <ChevronRight className="mt-5 h-5 w-5 shrink-0 text-zinc-600 group-hover:text-white" />
+              </Link>
 
-              {/* Controls */}
-              <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
-                {/* Status dropdown */}
+              <div className="mt-3 flex flex-wrap items-center gap-2">
                 <select
                   value={item.status}
-                  onChange={e => updateStatus(item.id, e.target.value as Status)}
+                  onChange={e => patch(item.id, { status: e.target.value as Status }, `상태 → ${STATUS_LABELS[e.target.value as Status]}`)}
                   disabled={saving === item.id}
-                  className="text-sm bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-300 focus:outline-none focus:border-indigo-500 min-h-[44px] text-base sm:text-sm"
+                  aria-label="진행 상태"
+                  className="min-h-[44px] flex-1 rounded-xl border border-zinc-700 bg-zinc-800 px-3 text-base text-zinc-200 focus:border-amber-300/60 focus:outline-none sm:flex-none"
                 >
-                  {STATUS_OPTIONS.map(s => (
-                    <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-                  ))}
+                  {STATUS_OPTIONS.map(s => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
                 </select>
-
-                {/* Featured toggle */}
                 <button
-                  onClick={() => toggleFeatured(item.id, item.is_featured)}
+                  onClick={() => patch(item.id, { is_featured: !item.is_featured }, item.is_featured ? '대표작 해제' : '대표작 지정')}
                   disabled={saving === item.id}
-                  className={`text-xs px-3 py-2 rounded-lg border transition-colors min-h-[44px] ${
-                    item.is_featured
-                      ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-400 hover:bg-indigo-500/10'
-                      : 'bg-gray-800 border-gray-700 text-gray-500 hover:text-gray-300'
-                  }`}
+                  aria-pressed={item.is_featured}
+                  className={cn('inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border', item.is_featured ? 'border-amber-300/40 bg-amber-300/10 text-amber-300' : 'border-zinc-700 bg-zinc-800 text-zinc-500')}
+                  aria-label="대표작"
                 >
-                  {saving === item.id ? '…' : item.is_featured ? '⭐ 대표' : '대표 설정'}
+                  <Star className={cn('h-4 w-4', item.is_featured && 'fill-current')} />
                 </button>
+                <button
+                  onClick={() => patch(item.id, { is_published: !item.is_published }, item.is_published ? '비공개로 전환' : '공개로 전환')}
+                  disabled={saving === item.id}
+                  aria-pressed={item.is_published}
+                  className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-zinc-700 bg-zinc-800 text-zinc-400"
+                  aria-label="공개 여부"
+                >
+                  {item.is_published ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                </button>
+                {saving === item.id && <Loader2 className="h-4 w-4 animate-spin text-zinc-500" />}
               </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       </main>
     </div>
   )

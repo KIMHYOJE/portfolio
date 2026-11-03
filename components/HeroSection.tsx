@@ -1,61 +1,64 @@
-export default function HeroSection({ awardCount, totalCount }: { awardCount: number; totalCount: number }) {
+import { ArrowDown, Github, Mail } from 'lucide-react'
+import { LiveDot } from './ui/badges'
+
+interface Metrics { total: number; awards: number; live: number; domains: number }
+
+export default function HeroSection({ metrics }: { metrics: Metrics }) {
+  const cards = [
+    { label: '총 수행 활동', value: metrics.total, unit: '건', code: 'TOTAL' },
+    { label: '공모전·해커톤 수상', value: metrics.awards, unit: '관왕', code: 'AWARDS' },
+    { label: '진행 중인 챌린지', value: metrics.live, unit: '건', code: 'LIVE', live: true },
+    { label: '보유 기술 도메인', value: metrics.domains, unit: '개 분야', code: 'DOMAINS' },
+  ]
+
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-gray-950 via-gray-900 to-indigo-950 pt-24 pb-20 px-4">
-      {/* Background grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(99,102,241,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,0.05)_1px,transparent_1px)] bg-[size:48px_48px]" />
+    <section className="relative overflow-hidden border-b border-zinc-900">
+      <div className="pointer-events-none absolute inset-0 bg-dot-grid [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" aria-hidden />
+      <div className="pointer-events-none absolute -top-40 left-1/2 h-[480px] w-[880px] max-w-[100vw] -translate-x-1/2 rounded-full bg-amber-500/[0.07] blur-3xl" aria-hidden />
 
-      <div className="relative max-w-4xl mx-auto">
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/30 rounded-full px-4 py-1.5 mb-6">
-          <span className="w-2 h-2 rounded-full bg-indigo-400 pulse-dot" />
-          <span className="text-indigo-300 text-sm font-medium">울산대학교 ICT융합학부</span>
-        </div>
-
-        {/* Main headline */}
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-balance mb-6">
-          <span className="text-white">피지컬 AI부터</span>
-          <br />
-          <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
-            웹 서비스까지
-          </span>
+      <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-24 sm:px-6 sm:pt-32">
+        <p className="font-mono text-xs tracking-[0.18em] text-zinc-500">
+          <span className="text-amber-300/90">~/kimhyoje</span> $ whoami
+        </p>
+        <h1 className="mt-5 max-w-4xl text-balance text-4xl font-extrabold leading-[1.15] tracking-tight text-white sm:text-5xl lg:text-6xl">
+          피지컬 AI와 로봇 제어부터 웹·보안까지,{' '}
+          <br className="hidden md:block" />
+          <span className="text-zinc-500">문제를 코드로 해결하는 엔지니어</span>
         </h1>
-        <p className="text-lg text-gray-400 mb-10 max-w-2xl text-balance">
-          문제를 코드로 해결하는 개발자 <strong className="text-gray-200">KIMHYOJE</strong>의 포트폴리오입니다.
-          ROS, 게임 개발, 보안, 알고리즘 등 다양한 도메인에서 성장 중입니다.
+        <p className="mt-6 max-w-2xl text-base leading-7 text-zinc-400 sm:text-lg">
+          울산대학교 ICT융합학부 2026학번 <strong className="font-semibold text-zinc-200">KIMHYOJE</strong>.
+          입학 첫해에만 해커톤 대상을 포함해 {metrics.total}개의 대회·활동에 직접 부딪혀 왔습니다.
         </p>
 
-        {/* CTA buttons */}
-        <div className="flex flex-wrap gap-3 mb-16">
-          <a
-            href="https://github.com/KIMHYOJE"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 bg-white text-gray-900 px-5 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-100 transition-colors"
-          >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-            GitHub
+        <div className="mt-8 flex flex-wrap gap-3">
+          <a href="#work" className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-white px-5 text-sm font-semibold text-zinc-950 hover:bg-zinc-200">
+            대표 프로젝트 보기 <ArrowDown className="h-4 w-4" />
           </a>
-          <a
-            href="mailto:hyoje.log@gmail.com"
-            className="flex items-center gap-2 border border-gray-700 text-gray-300 px-5 py-2.5 rounded-lg font-semibold text-sm hover:border-gray-500 hover:text-white transition-colors"
-          >
-            ✉ 이메일 문의
+          <a href="https://github.com/KIMHYOJE" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/70 px-5 text-sm font-semibold text-zinc-200 hover:border-zinc-600">
+            <Github className="h-4 w-4" /> GitHub
+          </a>
+          <a href="mailto:hyoje.log@gmail.com" className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/70 px-5 font-mono text-sm text-zinc-300 hover:border-zinc-600">
+            <Mail className="h-4 w-4" /> hyoje.log@gmail.com
           </a>
         </div>
 
-        {/* Metrics bar */}
-        <div className="grid grid-cols-3 gap-px bg-gray-800 rounded-2xl overflow-hidden">
-          {[
-            { value: `${totalCount}+`, label: '총 프로젝트·대회' },
-            { value: `${awardCount}회`, label: '수상 실적' },
-            { value: '2026', label: '학번 (신입생)' },
-          ].map((m) => (
-            <div key={m.label} className="bg-gray-900 px-4 py-5 text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-indigo-400 tabular-nums">{m.value}</div>
-              <div className="text-xs text-gray-500 mt-1">{m.label}</div>
+        <dl className="mt-14 grid grid-cols-2 gap-3.5 lg:grid-cols-4">
+          {cards.map(c => (
+            <div key={c.code} className="rounded-2xl border border-zinc-800/80 bg-zinc-900/70 p-5">
+              <dt className="flex items-center gap-2 font-mono text-[11px] tracking-[0.16em] text-zinc-500">
+                {c.live && <LiveDot />}
+                {c.code}
+              </dt>
+              <dd className="mt-4 flex items-baseline gap-1.5">
+                <span className={`font-mono text-4xl font-semibold tabular-nums ${c.live ? 'text-emerald-300' : 'text-white'}`}>
+                  {String(c.value).padStart(2, '0')}
+                </span>
+                <span className="text-sm text-zinc-500">{c.unit}</span>
+              </dd>
+              <p className="mt-1 text-sm text-zinc-400">{c.label}</p>
             </div>
           ))}
-        </div>
+        </dl>
       </div>
     </section>
   )

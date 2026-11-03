@@ -1,4 +1,4 @@
-export type Category = 'COMPETITION' | 'ACTIVITY' | 'RESEARCH' | 'CERT'
+export type Category = 'COMPETITION' | 'ACTIVITY' | 'RESEARCH' | 'CERT' | 'PROJECT'
 export type DomainTag = 'AI_DATA' | 'GAME_CONTENT' | 'ROBOT_IOT' | 'ALGO_SEC' | 'OTHER'
 export type Status = 'IN_PROGRESS' | 'COMPLETED' | 'ANNOUNCED'
 export type ScopeType = '교내' | '교외' | '권역연합'
@@ -32,6 +32,8 @@ export interface PortfolioItem {
   action_text?: string | null
   result_text?: string | null
   github_url?: string | null
+  demo_url?: string | null
+  tech_stack?: string[] | null
   is_published: boolean
   created_at: string
   item_attachments?: ItemAttachment[]
@@ -60,6 +62,11 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   ACTIVITY: '대외활동',
   RESEARCH: '연구',
   CERT: '자격증',
+  PROJECT: '개발 프로젝트',
+}
+
+export function hostOf(url: string) {
+  try { return new URL(url).hostname.replace(/^www\./, '') } catch { return url }
 }
 
 export const STATUS_LABELS: Record<Status, string> = {

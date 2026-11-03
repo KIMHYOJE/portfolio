@@ -27,7 +27,7 @@ export default function ActivityTimeline({ items, onSelect }: { items: Portfolio
   return (
     <section id="archive" className="border-t border-zinc-900">
       <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-        <SectionHeader code="02 / ARCHIVE" title="전체 활동 아카이브" sub="수상 이력은 각 대회 안에 통합했습니다. 진행 중인 항목은 결과가 나오는 대로 갱신됩니다." />
+        <SectionHeader code="03 / ARCHIVE" title="전체 활동 아카이브" sub="수상 이력은 각 대회 안에 통합했습니다. 진행 중인 항목은 결과가 나오는 대로 갱신됩니다." />
 
         <div role="tablist" aria-label="도메인 필터" className="-mx-4 mt-8 flex gap-2 overflow-x-auto px-4 no-scrollbar sm:mx-0 sm:flex-wrap sm:px-0">
           {chips.map(c => (

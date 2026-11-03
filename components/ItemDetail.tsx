@@ -9,7 +9,7 @@ import { useMediaQuery } from '@/lib/use-media-query'
 import DomainVisual from './DomainVisual'
 import { AwardBadge, MonoTag, StatusBadge } from './ui/badges'
 import {
-  CATEGORY_LABELS, DOMAIN_LABELS, formatPeriod, PortfolioItem, publicImages,
+  CATEGORY_LABELS, DOMAIN_LABELS, formatPeriod, hostOf, PortfolioItem, publicImages,
 } from '@/types/portfolio'
 
 const STAR_TABS = [
@@ -160,15 +160,25 @@ function Body({ item, Title }: { item: PortfolioItem; Title: TitleComponent }) {
         </div>
       </div>
 
-      {item.github_url && (
-        <a
-          href={item.github_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-4 text-sm font-medium text-zinc-200 hover:border-zinc-500 hover:text-white"
-        >
-          <Github className="h-4 w-4" /> GitHub 저장소 <ArrowUpRight className="h-4 w-4 text-zinc-500" />
-        </a>
+      {item.tech_stack && item.tech_stack.length > 0 && (
+        <ul className="flex flex-wrap gap-1.5">
+          {item.tech_stack.map(t => <li key={t}><MonoTag>{t}</MonoTag></li>)}
+        </ul>
+      )}
+
+      {(item.demo_url || item.github_url) && (
+        <div className="flex flex-wrap gap-2">
+          {item.demo_url && (
+            <a href={item.demo_url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-zinc-950 hover:bg-zinc-200">
+              {hostOf(item.demo_url)} <ArrowUpRight className="h-4 w-4" />
+            </a>
+          )}
+          {item.github_url && (
+            <a href={item.github_url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-4 text-sm font-medium text-zinc-200 hover:border-zinc-500 hover:text-white">
+              <Github className="h-4 w-4" /> GitHub 저장소 <ArrowUpRight className="h-4 w-4 text-zinc-500" />
+            </a>
+          )}
+        </div>
       )}
       <MonoTag className="self-start">id: {item.id.slice(0, 8)}</MonoTag>
     </div>

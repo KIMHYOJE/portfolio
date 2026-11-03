@@ -24,11 +24,12 @@ async function getItems(): Promise<PortfolioItem[]> {
 
 export default async function Home() {
   const items = await getItems()
+  const activities = items.filter(i => i.category !== 'PROJECT')
   const metrics = {
-    total: items.length,
-    awards: items.filter(i => i.is_awarded).length,
-    live: items.filter(i => i.status === 'IN_PROGRESS').length,
-    domains: new Set(items.map(i => i.domain_tag).filter(d => d !== 'OTHER')).size,
+    total: activities.length,
+    awards: activities.filter(i => i.is_awarded).length,
+    live: activities.filter(i => i.status === 'IN_PROGRESS').length,
+    domains: new Set(activities.map(i => i.domain_tag).filter(d => d !== 'OTHER')).size,
   }
 
   return (

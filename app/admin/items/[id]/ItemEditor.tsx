@@ -24,6 +24,7 @@ export default function ItemEditor({ initial }: { initial: PortfolioItem }) {
   const [form, setForm] = useState<Form>(rest)
   const [attachments, setAttachments] = useState<ItemAttachment[]>(item_attachments ?? [])
   const [saving, setSaving] = useState(false)
+  const [stackText, setStackText] = useState((rest.tech_stack ?? []).join(', '))
   const router = useRouter()
   const supabase = createClient()
 
@@ -205,6 +206,20 @@ export default function ItemEditor({ initial }: { initial: PortfolioItem }) {
           <div>
             <label className={LABEL} htmlFor="gh">GitHub URL</label>
             <input id="gh" type="url" inputMode="url" className={FIELD} placeholder="https://github.com/KIMHYOJE/..." {...text('github_url')} />
+          </div>
+          <div>
+            <label className={LABEL} htmlFor="demo">배포·기사·증빙 링크</label>
+            <input id="demo" type="url" inputMode="url" className={FIELD} placeholder="https://..." {...text('demo_url')} />
+          </div>
+          <div>
+            <label className={LABEL} htmlFor="stack">기술 스택 (쉼표로 구분)</label>
+            <input id="stack" className={FIELD} placeholder="Next.js, TypeScript, Supabase"
+              value={stackText}
+              onChange={e => {
+                setStackText(e.target.value)
+                const list = e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                set('tech_stack', list.length ? list : null)
+              }} />
           </div>
         </Section>
 

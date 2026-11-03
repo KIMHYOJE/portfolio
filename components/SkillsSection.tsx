@@ -18,7 +18,7 @@ export default function SkillsSection() {
   return (
     <section id="skills" className="border-t border-zinc-900">
       <div className="mx-auto max-w-6xl px-4 pt-20 sm:px-6">
-        <SectionHeader code="03 / STACK" title="기술 스택" sub="모든 항목에 실제 대회·프로젝트 근거를 연결했습니다." />
+        <SectionHeader code="04 / STACK" title="기술 스택" sub="모든 항목에 실제 대회·프로젝트 근거를 연결했습니다." />
       </div>
 
       <div className="group relative mt-10 overflow-hidden border-y border-zinc-900 py-4 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">

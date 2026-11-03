@@ -1,0 +1,18 @@
+name: Keep Supabase Portfolio DB Awake
+
+on:
+  schedule:
+    # 매주 월요일(1)과 목요일(4) 09:00 UTC — 7일 무활동 타이머 리셋
+    - cron: '0 9 * * 1,4'
+  workflow_dispatch:
+
+jobs:
+  ping-database:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Heartbeat to Supabase
+        run: |
+          curl -sf -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/portfolio_items?select=id&limit=1" \
+          -H "apikey: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}" \
+          && echo "✅ Supabase is awake" || echo "⚠️ Ping failed"

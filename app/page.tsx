@@ -28,7 +28,7 @@ export default async function Home() {
     total: items.length,
     awards: items.filter(i => i.is_awarded).length,
     live: items.filter(i => i.status === 'IN_PROGRESS').length,
-    domains: new Set(items.map(i => i.domain_tag)).size,
+    domains: new Set(items.map(i => i.domain_tag).filter(d => d !== 'OTHER')).size,
   }
 
   return (
